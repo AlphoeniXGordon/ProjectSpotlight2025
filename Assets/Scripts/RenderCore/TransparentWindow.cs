@@ -1,20 +1,9 @@
-
 using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class TransparentWindow : MonoBehaviour
 {
-    [SerializeField]
-    private Material m_Material;
-
-    private struct MARGINS
-    {
-        public int cxLeftWidth;
-        public int cxRightWidth;
-        public int cyTopHeight;
-        public int cyBottomHeight;
-    }
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetActiveWindow();
@@ -22,56 +11,41 @@ public class TransparentWindow : MonoBehaviour
     [DllImport("user32.dll")]
     private static extern int SetWindowLong(IntPtr hWnd, int nIndex, uint dwNewLong);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+    [DllImport("user32.dll")]
+    private static extern int SetLayeredWindowAttributes(IntPtr hWnd, uint crKey, byte bAlpha, uint dwFlags);
+
     [DllImport("Dwmapi.dll")]
     private static extern uint DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS margins);
 
-    [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-    private static extern int SetWindowPos(IntPtr hwnd, IntPtr hwndInsertAfter, int x, int y, int cx, int cy, int uFlags);
-
-    [DllImport("user32.dll")]
-    static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-
-    [DllImport("user32.dll", EntryPoint = "SetLayeredWindowAttributes")]
-    static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, byte bAlpha, int dwFlags);
-
-    [DllImport("User32.dll")]
-    private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-    const int GWL_STYLE = -16;
-    const int GWL_EXSTYLE = -20;
-    const uint WS_POPUP = 0x80000000;
-    const uint WS_VISIBLE = 0x10000000;
-
-    const uint WS_EX_TOPMOST = 0x00000008;
-    const uint WS_EX_LAYERED = 0x00080000;
-    const uint WS_EX_TRANSPARENT = 0x00000020;
-
-    const int SWP_FRAMECHANGED = 0x0020;
-    const int SWP_SHOWWINDOW = 0x0040;
-    const int LWA_ALPHA = 2;
-
-    private IntPtr HWND_TOPMOST = new IntPtr(-1);
-
-    private IntPtr _hwnd;
-
-    void Start()
+    private struct MARGINS
     {
-#if !UNITY_EDITOR
-    MARGINS margins = new MARGINS() { cxLeftWidth = -1 };
-    _hwnd = GetActiveWindow();
-    int fWidth = Screen.width;
-    int fHeight = Screen.height;
-
-        SetWindowLong(_hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    SetWindowLong(_hwnd, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT);
-        DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-        SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, fWidth, fHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW); 
-        ShowWindowAsync(_hwnd, 3); //Forces window to show in case of unresponsive app    // SW_SHOWMAXIMIZED(3)
-#endif
+        public int cxLeftWidth;
+        public int cxRightWidth;
+        public int cxTopHeight;
+        public int cxBottomHeight;
     }
 
-    void OnRenderImage(RenderTexture from, RenderTexture to)
+    private const int GWL_EXSTYLE = -20;
+    private const uint WS_EX_LAYERED = 0x00080000;
+    private const uint WS_EX_TRANSPARENT = 0x00000020;
+    private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+    private const uint LWA_COLORKEY = 0x00000001;
+
+    private void Start()
     {
-        Graphics.Blit(from, to, m_Material);
+#if !UNITY_EDITOR
+        IntPtr hWnd = GetActiveWindow();
+
+        MARGINS margins = new MARGINS { cxLeftWidth = -1 };
+        DwmExtendFrameIntoClientArea(hWnd, ref margins);
+
+        SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED);
+        SetLayeredWindowAttributes(hWnd, 0, 0, LWA_COLORKEY);
+
+        SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, 0);
+#endif
     }
 }
