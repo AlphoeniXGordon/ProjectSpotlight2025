@@ -31,6 +31,6 @@ public class SettingsUI : MonoBehaviour
 
     public void SetVoiceLevel(float newLevel)
     {
-
+        Debug.Log("Set Voice Level to" + newLevel);
     }
 }
