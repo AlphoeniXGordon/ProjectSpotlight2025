@@ -5,6 +5,7 @@ public enum GameStateType
 {
     Idle,
     Chapter01,
+    Chapter02,
     GameEnd,
 }
 public class GameStateBase

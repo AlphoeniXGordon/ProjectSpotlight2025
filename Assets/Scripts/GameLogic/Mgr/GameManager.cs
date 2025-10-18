@@ -25,6 +25,7 @@ public class GameManager
     {
         gameStateDic.Add(GameStateType.Idle, new GameState_Idle().Init());
         gameStateDic.Add(GameStateType.Chapter01, new GameState_Chapter01().Init());
+        gameStateDic.Add(GameStateType.Chapter02, new GameState_Chapter02().Init());
         gameStateDic.Add(GameStateType.GameEnd, new GameState_GameEnd().Init());
     }
     public void ChangeGameState(GameStateType state)

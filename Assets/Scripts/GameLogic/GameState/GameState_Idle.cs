@@ -39,6 +39,10 @@ public class GameState_Idle : GameStateBase
         }
         se.SetLoops(-1, LoopType.Restart);
         se.Play();
+        Main.Instance.HideTalk();
+        Main.Instance.dutyCtrl.Hide();
+        Main.Instance.IsFocusMouse = false; 
+        Main.Instance.arrow.gameObject.SetActive(false);
 
     }
     public override void OnGameStateExit()
